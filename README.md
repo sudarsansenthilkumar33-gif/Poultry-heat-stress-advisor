@@ -2,7 +2,7 @@
 
 ## Project Review-1 Milestone (35% Scope)
 **Track:** Software / Edge AI  
-**Deployment:** Flask Progressive Web App (PWA) with MobileNetV2 Posture Inference
+**Deployment:** Flask Progressive Web App (PWA) with MobileNetV2 Posture Inference  
 
 ---
 
@@ -25,13 +25,38 @@
 
 ---
 
-### 3. What is Currently Working
-* Full pipeline flow: **Video Upload $\rightarrow$ CLAHE Normalization $\rightarrow$ MobileNetV2 Inference $\rightarrow$ Posture Analysis $\rightarrow$ Action Advisory UI**.
+### 3. What Is Currently Working
+* Full pipeline flow: **Video Upload -> CLAHE Normalization -> MobileNetV2 Inference -> Posture Analysis -> Action Advisory UI**.
 * Standalone PWA installation workflow across desktop and Android mobile devices.
 
 ---
 
-### 4. Pending Work & Roadmap (Remaining 65%)
-* **Model Optimization (Review-2):** Quantization and conversion of PyTorch weights to ONNX / TFLite for low-power edge acceleration.
-* **IoT Sensor Ingestion:** Integrating ESP8266/ESP32 sensor arrays for real-time ambient Temperature-Humidity Index (THI).
-* **Actuator Interfacing:** Automated relay switching for tunnel fans and foggers via MQTT.
+### 4. Pending Work & Roadmap (Remaining 65% - Software Track)
+* **Model Optimization (Review-2):** Quantization and conversion of PyTorch weights to ONNX Runtime / WebAssembly for fast client/edge execution.
+* **Batch Video Streaming:** Asynchronous queue processing for handling concurrent multi-camera shed feeds.
+* **Historical Analytics Database:** SQLite/PostgreSQL schema integration to track flock heat index trends over time.
+* **Automated Notification Dispatcher:** Webhook/Email alert system for immediate notification during high-risk thresholds.
+
+---
+
+## Technical Architecture & API Documentation
+
+### REST API Endpoints
+
+#### 1. Dashboard Shell & Service Worker
+* **Endpoint:** `GET /`
+* **Description:** Delivers the responsive Progressive Web App dashboard shell and client service worker.
+* **Response:** `200 OK` (HTML)
+
+#### 2. Video Anomaly Processing
+* **Endpoint:** `POST /analyze`
+* **Payload:** `multipart/form-data` containing `video` file (.mp4, .avi).
+* **Response Format (`application/json`):**
+```json
+{
+  "status": "success",
+  "processed_frames": 12,
+  "average_stress_score": 3.45,
+  "severity_level": "MODERATE",
+  "advisory": "Trigger circulation fans and verify shed water distribution line pressure."
+}
