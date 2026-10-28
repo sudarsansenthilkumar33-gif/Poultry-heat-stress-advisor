@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poultry Heat Stress Advisor | AI Edge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(22, 30, 49, 0.75);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      background: radial-gradient(circle at 50% 0%, #1e1e38 0%, var(--bg) 75%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+    .container { width: 100%; max-width: 860px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 32px; }
+    header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
+    header h1 span { color: var(--primary); }
+    header p { color: var(--muted); font-size: 0.95rem; margin-top: 6px; }
+
+    .dropzone {
+      background: var(--card-bg);
+      border: 2px dashed var(--border);
+      backdrop-filter: blur(12px);
+      border-radius: 18px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .dropzone:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .dropzone input { display: none; }
+    .dropzone svg { width: 48px; height: 48px; stroke: var(--primary); margin-bottom: 12px; }
+    .dropzone h3 { font-size: 1.1rem; margin-bottom: 4px; }
+    .dropzone span { font-size: 0.85rem; color: var(--muted); }
+
+    .btn {
+      width: 100%;
+      margin-top: 18px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .results {
+      display: none;
+      margin-top: 28px;
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .banner {
+      padding: 18px 24px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+      text-align: center;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .card h4 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .card p { font-size: 1.4rem; font-weight: 700; }
+
+    .advisory-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .advisory-card h4 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+    .advisory-card p { font-size: 1.05rem; line-height: 1.5; color: #e2e8f0; }
+
+    .loader {
+      display: none;
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Poultry <span>StressSense</span> Edge</h1>
+    <p>Automated Thermal Anomaly & Behavioral Panting Diagnostics</p>
+  </header>
+
+  <div class="dropzone" onclick="document.getElementById('videoInput').click()">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+    </svg>
+    <h3 id="fileNameLabel">Choose or Drop Video Sample</h3>
+    <span id="fileSubLabel">Supports MP4, AVI, MOV (Edge analyzed under 500ms)</span>
+    <input type="file" id="videoInput" accept="video/*" onchange="handleFileSelect(event)">
+  </div>
+
+  <button class="btn" id="runBtn" onclick="runInference()">
+    <div class="loader" id="loader"></div>
+    <span id="btnText">Run Edge Inference</span>
+  </button>
+
+  <div class="results" id="resultsSection">
+    <div class="banner" id="resBanner">--</div>
+    
+    <div class="grid">
+      <div class="card">
+        <h4>Risk Index</h4>
+        <p id="resRiskIndex">--</p>
+      </div>
+      <div class="card">
+        <h4>Panting Posture</h4>
+        <p id="resPosture">--</p>
+      </div>
+      <div class="card">
+        <h4>Analyzed Frames</h4>
+        <p id="resFrames">--</p>
+      </div>
+    </div>
+
+    <div class="advisory-card">
+      <h4>Actionable Mitigation Advisory</h4>
+      <p id="resAction">--</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Connected directly to your live Render backend
+  const API_URL = "https://poultry-heat-stress-advisor.onrender.com/analyze"; 
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) {
+      document.getElementById('fileNameLabel').innerText = file.name;
+      document.getElementById('fileSubLabel').innerText = `${(file.size / (1024 * 1024)).toFixed(2)} MB - Ready for analysis`;
+    }
+  }
+
+  async function runInference() {
+    const input = document.getElementById('videoInput');
+    if (!input.files || input.files.length === 0) {
+      alert("Please select a poultry video file first.");
+      return;
+    }
+
+    const btn = document.getElementById('runBtn');
+    const loader = document.getElementById('loader');
+    const btnText = document.getElementById('btnText');
+    const results = document.getElementById('resultsSection');
+
+    btn.disabled = true;
+    loader.style.display = 'block';
+    btnText.innerText = 'Analyzing Video Pipeline...';
+
+    const formData = new FormData();
+    formData.append('video', input.files[0]);
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) throw new Error("Server inference failed");
+      const data = await response.json();
+
+      const banner = document.getElementById('resBanner');
+      banner.innerText = `${data.severity} HEAT RISK DETECTED`;
+      banner.style.backgroundColor = `${data.theme_color}22`;
+      banner.style.color = data.theme_color;
+      banner.style.borderColor = data.theme_color;
+
+      document.getElementById('resRiskIndex').innerText = data.risk_index;
+      document.getElementById('resPosture').innerText = data.panting;
+      document.getElementById('resFrames').innerText = data.frames;
+      document.getElementById('resAction').innerText = data.action;
+
+      results.style.display = 'block';
+      results.scrollIntoView({ behavior: 'smooth' });
+
+    } catch (err) {
+      alert("Inference Error: Make sure your Render backend is awake and responding.");
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      loader.style.display = 'none';
+      btnText.innerText = 'Run Edge Inference';
+    }
+  }
+</script>
+</body>
+</html>
